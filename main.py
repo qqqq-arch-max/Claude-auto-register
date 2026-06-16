@@ -1,5 +1,5 @@
 from mail import QQMail
-from cloudflare import mailCloud
+from cloudflare import gptMail, gptMailCode
 from chrome_bot import chromeBot
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
@@ -11,8 +11,8 @@ import json
 from utils.config import config
 from utils.cookie_utils import CookieManager
 
-mail = mailCloud()
-QQ = QQMail()
+mail = gptMail()
+QQ = gptMailCode()
 
 # 创建日志记录器
 logger = logging.getLogger(__name__)
@@ -76,7 +76,11 @@ def read_txt_file(file_path):
 
 def get_ip():
     ips = read_txt_file("Proxy.txt")
-    return {"proxyip": random.choice(ips), "port": "port"}
+    line = random.choice(ips).strip()
+    if ":" in line:
+        host, port = line.rsplit(":", 1)
+        return {"proxyip": host, "port": port}
+    return {"proxyip": line, "port": "7897"}
 
 
 def get_dom_list():
@@ -88,9 +92,22 @@ def initChrome(x, y):  # 初始化 浏览器
     bot = chromeBot()
     ipconfig = get_ip()
     chrome = bot.createWebView(ipconfig["proxyip"], ipconfig["port"])
-    chrome.get("https://claude.ai")
-    # chrome.get("https://google.com/")
+    chrome.get("https://claude.ai/login")
     chrome.set_window_position(x, y)  # 设置窗口左上角的位置坐标
+
+    # 等 React 渲染，同时等 Cloudflare challenge 通过
+    print("等待页面加载（React SPA + 可能的 Cloudflare challenge）...")
+    time.sleep(5)
+    try:
+        WebDriverWait(chrome, 30).until(
+            lambda d: d.execute_script(
+                "return document.querySelector('input[type=email], input[type=text], button[type=submit]') !== null"
+            )
+        )
+        print("页面交互元素就绪")
+    except Exception:
+        print("WARN: 30s 内未检测到表单元素，尝试继续...")
+        chrome.save_screenshot("logs/page_timeout.png")
 
     return chrome
 
@@ -99,6 +116,13 @@ def startMain(x, y):
     _mail = getOneMail()
     # _mail = "xxx"
     _chrome = initChrome(x, y)
+
+    # Debug: screenshot page and dump source
+    _chrome.save_screenshot("logs/page_debug.png")
+    with open("logs/page_source.html", "w", encoding="utf-8") as f:
+        f.write(_chrome.page_source)
+    print("DEBUG: saved screenshot + page source to logs/")
+
     dom_list = get_dom_list()
     print("加载完毕")
 
@@ -158,4 +182,10 @@ def startMain(x, y):
         logger.error("获取邮箱跳转连接获取失败")
 
 
-startMain(0, 0)
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--x", type=int, default=0, help="浏览器 X 坐标")
+    parser.add_argument("--y", type=int, default=0, help="浏览器 Y 坐标")
+    args = parser.parse_args()
+    startMain(args.x, args.y)

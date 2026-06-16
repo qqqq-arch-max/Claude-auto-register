@@ -11,10 +11,14 @@ import os, random
 
 def create_web_view(proxyip, port):
     try:
-        # _proxy = f"{proxyip}:{port}"
-        _proxy = f"http://{proxyip}"
-        # _proxy = f"9214fd96:074219ac@us11.kookeey.info:20385"
-        # _proxy = f"7208866-9214fd96:074219ac-global-74043961-1m@gate.kookeey.info:1000"
+        # Use proxy from Proxy.txt; set CLAUDE_NO_PROXY=1 to disable
+        import os as _os
+        if _os.environ.get("CLAUDE_NO_PROXY") == "1":
+            _proxy = None
+        elif proxyip and port:
+            _proxy = f"http://{proxyip}:{port}"
+        else:
+            _proxy = None
         print(_proxy)
         chrome_driver_path = os.path.join(os.getcwd(), "driver", "chromedriver.exe")
         # 创建Chrome Service对象
@@ -23,20 +27,18 @@ def create_web_view(proxyip, port):
         # 设置禁止加载图片的偏好
         prefs = {"profile.managed_default_content_settings.images": 2}
         chromeOption.add_experimental_option("prefs", prefs)
-        chromeOption.add_argument(f"--proxy-server={_proxy}")
+        if _proxy:
+            chromeOption.add_argument(f"--proxy-server={_proxy}")
         chromeOption.add_argument("--no-sandbox")
         chromeOption.add_argument("--disable-dev-shm-usage")
+        chromeOption.add_argument("--disable-blink-features=AutomationControlled")
         # file_path = os.path.join(os.getcwd(), "pro.zip")
         # chromeOption.add_extension(file_path)
         print("等待启动")
         chrome = webdriver.Chrome(
             service=service, options=chromeOption, keep_alive=True
         )
-        # 设置请求拦截器来阻止CSS请求
-        chrome.execute_cdp_cmd('Network.setBlockedURLs', {
-            'urls': ['.css', '*.css', 'https://*.css', 'http://*.css','.woff2', '*.woff2', 'https://*.woff2', 'http://*.woff2']
-        })
-        chrome.execute_cdp_cmd('Network.enable', {})
+        # Don't block CSS/fonts — React SPAs need them to render
         return chrome
     except Exception as e:
         print("An error occurred:", str(e))

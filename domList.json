@@ -1,15 +1,21 @@
 {
-    "mailInput": "/html/body/div[2]/div/div[1]/main/div[1]/div/div[2]/div/div[1]/div/form/input",
-    "nextMailButton": "/html/body/div[2]/div/div[1]/main/div[1]/div/div[2]/div/div[1]/div/form/button",
-    "jumpPageYears": "/html/body/main/div/div/form/div/label[2]/div/div",
-    "jumpPageYearsNext": "/html/body/main/div/div/form/div/button",
-    "timeOrOneButton": "/html/body/main/div/div/div/button",
-    "freeButton": "/html/body/main/div/div/div/button/div/div[2]/div[2]/div[3]/button",
-    "iUnderstandButton": "/html/body/main/div/div/div[2]/div/div[7]/button",
-    "settingsName": "/html/body/main/div/div/div[2]/div/div[2]/form/div/input",
-    "settingsNameNext": "/html/body/main/div/div/div[2]/div/div[2]/form/div/button",
-    "setCodding": "/html/body/main/div/div/div[2]/div/div[2]/div/div[1]/button",
-    "setCoddingNext": "/html/body/main/div/div/div[2]/div/div[3]/div/button",
-    "iEndMy": "/html/body/main/div/div/div[2]/div/div[3]/div/div[2]/button",
-    "isPheon": "/html/body/main/div/div/form/div[1]/div/div/input"
+    "_comment": "Claude.ai 新版 React SPA 注册页面选择器（2025-06）",
+    "_note": "如果失效，运行 python discover_dom.py 重新探测",
+
+    "mailInput": "//input[@type='email'] | //input[@type='text' and contains(@placeholder,'mail')] | //input[contains(@name,'mail')] | //input[contains(@id,'mail')]",
+    "nextMailButton": "//button[@type='submit'] | //button[contains(text(),'Continue')] | //button[contains(text(),'continue')] | //button[contains(.,'Continue with email')]",
+
+    "jumpPageYears": "//input[@type='checkbox']",
+    "jumpPageYearsNext": "//button[contains(@type,'submit')]",
+    "timeOrOneButton": "//button[contains(text(),'Continue') or contains(text(),'Next')]",
+    "freeButton": "//button[contains(text(),'Free') or contains(text(),'Continue') or contains(text(),'Get started')]",
+    "iUnderstandButton": "//button[contains(text(),'Understand') or contains(text(),'Agree') or contains(text(),'Continue') or contains(text(),'Accept')]",
+    "settingsName": "//input[@type='text']",
+    "settingsNameNext": "//button[@type='submit']",
+    "setCodding": "//button[contains(text(),'Code') or contains(text(),'Development')]",
+    "setCoddingNext": "//button[@type='submit']",
+    "iEndMy": "//button[contains(text(),'Skip') or contains(text(),'End')]",
+    "isPheon": "//input[@type='checkbox']",
+
+    "_fallback": "mailInput=document.querySelector('input[type=email]'); nextMailButton=document.querySelector('button[type=submit]')"
 }
